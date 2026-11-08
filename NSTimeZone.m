@@ -332,6 +332,14 @@ static void NSTimeZoneCacheAdd(NSString *name, NSTimeZone *tz)
 
 @implementation __NSTimeZone
 
+// osxer: time zones are immutable (like CFTimeZone), so a copy is the object itself, as on
+// macOS. Without this the abstract -[NSTimeZone copyWithZone:] raised
+// "__NSTimeZone copyWithZone: requires a subclass implementation" (e.g. NSDatePicker setTimeZone:).
+- (id)copyWithZone:(NSZone *)zone
+{
+    return [self retain];
+}
+
 - (NSString *)localizedName:(NSTimeZoneNameStyle)style locale:(NSLocale *)locale
 {
     return [(NSString *)CFTimeZoneCopyLocalizedName((CFTimeZoneRef)self, (CFTimeZoneNameStyle)style, (CFLocaleRef)locale) autorelease];
