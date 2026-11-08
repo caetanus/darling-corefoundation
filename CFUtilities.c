@@ -553,6 +553,18 @@ static Boolean also_do_stderr() {
 extern char *__CFBundleMainID;
 
 static void __CFLogCString(int32_t lev, const char *message, size_t length, char withBanner) {
+    // OSXER LOG (stderr): emit before ASL, even if its daemon is unavailable.
+    // Do not use CF/Objective-C here: _CFLogSimple also runs during teardown.
+    const char *mirror = getenv("OSXER_LOG_STDERR");
+    Boolean mirrorToStderr = !issetugid() && mirror && strcmp(mirror, "1") == 0;
+    if (mirrorToStderr) {
+        flockfile(stderr);
+        fprintf(stderr, "[CFLog %d] ", lev);
+        fwrite(message, 1, length, stderr);
+        if (!length || message[length - 1] != '\n') fputc('\n', stderr);
+        fflush(stderr);
+        funlockfile(stderr);
+    }
     char *banner = NULL;
     char *time = NULL;
     char *thread = NULL;
@@ -607,7 +619,8 @@ static void __CFLogCString(int32_t lev, const char *message, size_t length, char
 #endif
 #endif // DEPLOYMENT_TARGET
 
-    if (also_do_stderr()) {
+    // OSXER LOG (stderr): do not duplicate the mirror with CFLOG_FORCE_STDERR.
+    if (!mirrorToStderr && also_do_stderr()) {
 #if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED || DEPLOYMENT_TARGET_EMBEDDED_MINI
 	struct iovec v[3];
 	v[0].iov_base = banner;
@@ -697,7 +710,9 @@ CF_PRIVATE void _CFLogSimple(int32_t lev, char *format, ...) {
     char formattedMessage[1024];
     int length = vsnprintf(formattedMessage, 1024, format, args);
     if (length > 0) {
-        __CFLogCString(lev, formattedMessage, length, 0);
+        // OSXER LOG (bounds): vsnprintf returns the untruncated length.
+        size_t written = length < sizeof(formattedMessage) ? length : sizeof(formattedMessage) - 1;
+        __CFLogCString(lev, formattedMessage, written, 0);
     }
     va_end(args);
 }
