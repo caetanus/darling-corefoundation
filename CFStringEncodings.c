@@ -826,7 +826,15 @@ CFIndex CFStringGetMaximumSizeOfFileSystemRepresentation(CFStringRef string) {
 } 
 
 Boolean CFStringGetFileSystemRepresentation(CFStringRef string, char *buffer, CFIndex maxBufLen) {
-#if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED
+#if defined(DARLING)
+    // OSXER APPKIT (file names): HFS+/APFS want decomposed (NFD) names, but Darling's files live
+    // on Linux filesystems, which compare names byte for byte and hold them as written (NFC in
+    // practice). Decomposing made every accented name unreachable: a file created with
+    // -writeToFile: ("caf\xc3\xa9.txt") was not found through -fileSystemRepresentation
+    // ("cafe\xcc\x81.txt"), and neither was any such file of the host. Use the string's UTF-8.
+    if (!CFStringGetCString(string, buffer, maxBufLen, kCFStringEncodingUTF8)) return false;
+    return true;
+#elif DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED
 #define MAX_STACK_BUFFER_LEN	(255)
     const UTF16Char *characters = CFStringGetCharactersPtr(string);
     const char *origBuffer = buffer;

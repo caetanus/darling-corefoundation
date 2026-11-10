@@ -20,6 +20,13 @@ CF_PRIVATE
 
 @implementation NSCharacterSet
 
+// OSXER APPKIT (URL query): RFC 3986 query = pchar / "/" / "?".
++ (NSCharacterSet *)URLQueryAllowedCharacterSet
+{
+    return [self characterSetWithCharactersInString:
+        @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~!$&'()*+,;=:@/?"];
+}
+
 + (id)controlCharacterSet
 {
     return (id)CFCharacterSetGetPredefined(kCFCharacterSetControl);
