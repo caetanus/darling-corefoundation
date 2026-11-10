@@ -21,6 +21,8 @@ NSString *const NSCocoaErrorDomain = @"NSCocoaErrorDomain";
 NSString *const NSPOSIXErrorDomain = @"NSPOSIXErrorDomain";
 NSString *const NSOSStatusErrorDomain = @"NSOSStatusErrorDomain";
 NSString *const NSMachErrorDomain = @"NSMachErrorDomain";
+// OSXER APPS (multiple errors)
+NSString *const NSMultipleUnderlyingErrorsKey = @"NSMultipleUnderlyingErrors";
 NSString *const NSUnderlyingErrorKey = @"NSUnderlyingError";
 NSString *const NSLocalizedDescriptionKey = @"NSLocalizedDescription";
 NSString *const NSLocalizedFailureReasonErrorKey = @"NSLocalizedFailureReason";

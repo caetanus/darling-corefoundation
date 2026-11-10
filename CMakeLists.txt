@@ -57,6 +57,8 @@ set(cf_c_sources
 	CFDictionary.c
 	CFError.c
 	CFFileUtilities.c
+	# OSXER APPS (descriptor readiness)
+	CFFileDescriptor.c
 	CFCharacterSet.c
 	CFICUConverters.c
 	CFLocale.c
